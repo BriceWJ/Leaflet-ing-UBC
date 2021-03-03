@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Leaflet-ing UBC</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  </head>
+
+  <body>
+
+    <h1 style="color: black; position: relative; left: 300px; margin: 1px;">UBC Addresses</h1>
+      <div id="mapid" style="width: 800px; height: 800px;"></div>
+
+      <script>
+        var map = L.map('mapid', {
+          center: [49.2626, -123.2480],
+          zoom: 15
+          }
+        );
+
+        var topoTiles = L.tileLayer(
+          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+          }
+        ).addTo(map);
+
+        var style = {
+          radius: 4,
+          fillColor: "#636363",
+          color: "#000",
+          weight: 1,
+          opacity: 0.5,
+          fillOpacity: 0.65
+        };
+
+        function onEachPoint(feature, layer) {
+           if (feature.properties && feature.properties.FULLADDRESS) {
+              layer.bindTooltip(feature.properties.FULLADDRESS);
+           }
+        }
+
+        $.getJSON("https://raw.githubusercontent.com/UBCGeodata/ubcv-locations/master/geojson/ubcv_addresses.geojson",
+        function(data) {
+          L.geoJSON(data, {
+            pointToLayer: function(feature, latlng) {
+              return L.circleMarker(
+                latlng,
+                style
+              );
+            },
+            onEachFeature: onEachPoint
+          }).addTo(map);
+        });
+
+      </script>
+
+  </body>
+</html>
