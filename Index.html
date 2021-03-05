@@ -11,8 +11,8 @@
 
   <body>
 
-    <h1 style="color: black; position: relative; left: 300px; margin: 1px;">UBC Addresses</h1>
-      <div id="mapid" style="width: 800px; height: 800px;"></div>
+    <h1 style="color: black; position: relative; left: 220px; margin: 1px;">UBC Addresses & Fields</h1>
+    <div id="mapid" style="width: 800px; height: 800px;"></div>
 
       <script>
         var map = L.map('mapid', {
@@ -24,14 +24,13 @@
         var topoTiles = L.tileLayer(
           'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
           }
         ).addTo(map);
 
-        var style = {
+        var stylePoint = {
           radius: 4,
           fillColor: "#636363",
-          color: "#000",
+          color: "black",
           weight: 1,
           opacity: 0.5,
           fillOpacity: 0.65
@@ -44,16 +43,50 @@
         }
 
         $.getJSON("https://raw.githubusercontent.com/UBCGeodata/ubcv-locations/master/geojson/ubcv_addresses.geojson",
-        function(data) {
-          L.geoJSON(data, {
+        function(data1) {
+          L.geoJSON(data1, {
             pointToLayer: function(feature, latlng) {
               return L.circleMarker(
                 latlng,
-                style
+                stylePoint
               );
             },
             onEachFeature: onEachPoint
           }).addTo(map);
+        });
+
+        //testing polygons
+
+          function getColor(c) {
+              return c == "track"     ? '#f7fcb9' :
+                     c == "concrete"  ? '#bdbdbd' :
+                     c == "garden"    ? '#31a354' :
+                     c == "field"     ? '#2ca25f' :
+                     c == "astro"     ? '#99d8c9' :
+                     c == "farm"      ? '#a1d99b' :
+                                        '#007800';
+          }
+
+        function stylePoly(feature) {
+            return {
+                fillColor: getColor(feature.properties.SURFACE_TYPE),
+                weight: 1,
+                opacity: 0.5,
+                color: 'black',
+                dashArray: '3',
+                fillOpacity: 0.6
+            };
+        }
+
+        function onEachPolygon(feature, layer) {
+           if (feature.properties && feature.properties.NAME) {
+              layer.bindTooltip(feature.properties.NAME);
+           }
+        }
+
+        $.getJSON("https://raw.githubusercontent.com/UBCGeodata/ubcv-landscape/master/geojson/ubcv_fields.geojson",
+        function(data2) {
+          L.geoJSON(data2, {style: stylePoly, onEachFeature: onEachPolygon}).addTo(map);
         });
 
       </script>
